@@ -159,8 +159,8 @@ model = get_yolo5(model_type)
 
 #sidebar
 
-classes_selector = st.sidebar.multiselect('Select classes', 
-                                        CLASSES, default='Screw')
+# classes_selector = st.sidebar.multiselect('Select classes', 
+#                                         CLASSES, default='Screw')
 
 # Prediction section
 # ---------------------------------------------------------
@@ -169,10 +169,10 @@ classes_selector = st.sidebar.multiselect('Select classes',
 # target_class_ids - Indexes of selected classes according to the class list
 # rgb_colors - RGB colors for selected classes
 
-if classes_selector:
-    target_class_ids = [CLASSES.index(class_name) for class_name in classes_selector]
-else:
-    target_class_ids = [0]
+# if classes_selector:
+#     target_class_ids = [CLASSES.index(class_name) for class_name in classes_selector]
+# else:
+#     target_class_ids = [0]
 
 rgb_colors = get_colors(target_class_ids)
 detected_ids = None
