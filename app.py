@@ -224,6 +224,7 @@ if prediction_mode == 'Single image':
 
 
 if prediction_mode == 'Video Upload':
+    vid_file = None
     vid_bytes = st.file_uploader(
         "Pilih Video",
         type=['png', 'jpg', 'jpeg'])
