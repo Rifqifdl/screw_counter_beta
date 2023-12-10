@@ -18,24 +18,13 @@ st.set_page_config(
 )
 
 st.title('Deteksi dan Hitung Sekrup dengan YOLOv5')
-st.write('Kelompok 4 PCD- Pagi B')
+st.write('Kelompok 4 PCD - Pagi B')
 
 #region Functions
 # --------------------------------------------
-
 def get_yolo5(model_type='s'):
     '''
-    Возвращает модель YOLOv5 из Torch Hub типа `model_type`
-
-    Arguments
-    ----------
-    model_type : str, 's', 'm', 'l' or 'x'
-        тип модели - s - самая быстрая и неточная, x - самая точная и медленная
-
-    Returns
-    -------
-    torch model
-        torch-модель типа `<class 'models.common.autoShape'>`
+    Returns the YOLOv5 model from Torch Hub of type `model_type`
     '''
     return torch.hub.load('Rifqifdl/yolov5', 
                           'yolov5{}'.format(model_type), 
@@ -44,37 +33,37 @@ def get_yolo5(model_type='s'):
 
 def get_preds(img : np.ndarray) -> np.ndarray:
     """
-    Возвращает прогнозы, полученные от YOLOv5
+    Returns predictions obtained from YOLOv5
 
     Arguments
     ---------
-    img : np.ndarray
-        RGB-изображение загруженное с помощью OpenCV
-
+    img: np.ndarray
+        RGB image loaded using OpenCV
+    
     Returns
     -------
     2d np.ndarray
-        Список найденных объектов в формате 
-        `[xmin,ymin,xmax,ymax,conf,label]`
+        List of detected objects in the format
+        `[xmin, ymin, xmax, ymax, conf, label]`
     """
     return model([img]).xyxy[0].numpy()
 
 def get_colors(indexes : List[int]) -> dict:
     '''
-    Возвращает цвета для всех выбранных классов. Цвета формируются 
-    на основе наборов TABLEAU_COLORS и BASE_COLORS из Matplotlib
-
+   Returns colors for all selected classes. Colors are generated 
+    based on sets of TABLEAU_COLORS and BASE_COLORS from Matplotlib.
+    
     Arguments
     ----------
-    indexes : list of int
-        список индексов классов в порядке по умолчанию для 
-        MS COCO (80 классов, без background)
-
+    indexes: list of int
+        List of class indexes in the default order for MS COCO 
+        (80 classes, excluding background).
+    
     Returns
     -------
     dict
-        словарь, в котором ключи - id классов, указанные в 
-        indexes, а значения - tuple с компонентами rgb цвета, например, (0,0,0)
+        Dictionary where keys are class IDs specified in indexes, 
+        and values are tuples with RGB color components, e.g., (0, 0, 0).
     '''
     to_255 = lambda c: int(c*255)
     tab_colors = list(mcolors.TABLEAU_COLORS.values())
@@ -96,18 +85,18 @@ def get_colors(indexes : List[int]) -> dict:
 
 def get_legend_color(class_name : int):
     """
-    Возвращает цвет ячейки для `pandas.Styler` при создании легенды. 
-    Раскарасит ячейку те же цветом, который имеют боксы соотвествующего класс
-
+    Returns the cell color for `pandas.Styler` when creating a legend. 
+    Colors the cell with the same color as the boxes of the corresponding class.
+    
     Arguments
     ---------
-    class_name : int
-        название класса согласно списку классов MS COCO
-
+    class_name: int
+        Class name according to the MS COCO class list.
+    
     Returns
     -------
     str
-        background-color для ячейки, содержащей class_name
+        background-color for the cell containing class_name.
     """  
 
     index = CLASSES.index(class_name)
@@ -115,7 +104,7 @@ def get_legend_color(class_name : int):
     return 'background-color: rgb({color[0]},{color[1]},{color[2]})'.format(color=color)
 
 class VideoTransformer(VideoTransformerBase):
-    """Компонент для создания стрима веб камеры"""
+    """Component for creating a webcam stream"""
     def __init__(self):
         self.model = model
         self.rgb_colors = rgb_colors
@@ -143,7 +132,7 @@ class VideoTransformer(VideoTransformerBase):
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 1
         font_thickness = 2
-        font_color = (255, 255, 255)  # White color
+        font_color = (0, 255, 0)  # White color
         position = (10, 30)  # Adjust the position as needed
         cv2.putText(img, f'Detected Objects: {num_detected_objects}', position, font, font_scale, font_color, font_thickness)
 
@@ -156,10 +145,8 @@ class VideoTransformer(VideoTransformerBase):
 # ---------------------------------------------------
 
 model_type = 's'
-
-# with st.spinner('Loading the model...'):
 model = get_yolo5(model_type)
-# st.success('Loading the model.. Done!')
+
 #endregion
 
 
@@ -167,10 +154,7 @@ model = get_yolo5(model_type)
 # ----------------------------------------------------
 
 #sidebar
-prediction_mode = st.sidebar.radio(
-    "",
-    ('Single image', 'Web camera'),
-    index=0)
+prediction_mode = st.sidebar.selectbox("Select an option", ["Single Image", "Web Camera"], default="Single Image")
     
 classes_selector = st.sidebar.multiselect('Select classes', 
                                         CLASSES, default='Screw')
