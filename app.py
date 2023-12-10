@@ -19,11 +19,10 @@ st.set_page_config(
 )
 
 st.title('Deteksi dan Hitung Sekrup dengan YOLOv5')
-st.header('Kelompok 4 PCD - Pagi B')
+st.write('Kelompok 4 PCD - Pagi B')
 
 # Select Box Tipe Input
-st.write('Pilih Tipe Input')
-prediction_mode = st.selectbox("",('Single image', 'Web camera'),index=0)
+prediction_mode = st.selectbox("Pilih Tipe Input",('Single image', 'Web camera'),index=0)
 
 #region Functions
 # --------------------------------------------
