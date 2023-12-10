@@ -224,70 +224,54 @@ if prediction_mode == 'Single image':
 
 
 if prediction_mode == 'Video Upload':
-    # Menambahkan formulir untuk mengunggah video
-    uploaded_file = st.file_uploader(
-        "Pilih Video",
-        type=['mp4', 'avi', 'mkv'],
-        key="video_uploader"
-    )
+    vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
+        if vid_bytes:
+            vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
+            with open(vid_file, 'wb') as out:
+                out.write(vid_bytes.read())
 
-    # Jika file diunggah
-    if uploaded_file is not None:
-        # Baca video dari file yang diunggah
-        video_bytes = uploaded_file.read()
-        st.video(video_bytes, format="video/mp4", start_time=0)
+    if vid_file:
+        cap = cv2.VideoCapture(vid_file)
+        custom_size = st.sidebar.checkbox("Custom frame size")
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if custom_size:
+            width = st.sidebar.number_input("Width", min_value=120, step=20, value=width)
+            height = st.sidebar.number_input("Height", min_value=120, step=20, value=height)
 
-        # Convert video bytes to numpy array
-        video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
-        video_cap = cv2.VideoCapture()
-        video_cap.open('file', cv2.CAP_IMAGES)  # Gunakan 'file' untuk video
+        fps = 0
+        st1, st2, st3 = st.columns(3)
+        with st1:
+            st.markdown("## Height")
+            st1_text = st.markdown(f"{height}")
+        with st2:
+            st.markdown("## Width")
+            st2_text = st.markdown(f"{width}")
+        with st3:
+            st.markdown("## FPS")
+            st3_text = st.markdown(f"{fps}")
 
-        # Loop melalui frame video
-        while video_cap.isOpened():
-            ret, frame = video_cap.read()
-
+        st.markdown("---")
+        output = st.empty()
+        prev_time = 0
+        curr_time = 0
+        while True:
+            ret, frame = cap.read()
             if not ret:
+                st.write("Can't read frame, stream ended? Exiting ....")
                 break
+            frame = cv2.resize(frame, (width, height))
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            output_img = infer_image(frame)
+            output.image(output_img)
+            curr_time = time.time()
+            fps = 1 / (curr_time - prev_time)
+            prev_time = curr_time
+            st1_text.markdown(f"**{height}**")
+            st2_text.markdown(f"**{width}**")
+            st3_text.markdown(f"**{fps:.2f}**")
 
-            # Ubah frame ke format RGB
-            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Dapatkan prediksi untuk frame saat ini
-            result = get_preds(frame_rgb)
-
-            # Salin hasil fungsi yang di-cache untuk menghindari modifikasi cache
-            result_copy = result.copy()
-
-            # Pilih hanya objek kelas yang diinginkan
-            result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
-
-            detected_ids = []
-            # Salin frame untuk menghindari modifikasi langsung
-            frame_draw = frame_rgb.copy().astype(np.uint8)
-
-            # Gambar kotak untuk semua objek target yang terdeteksi
-            for bbox_data in result_copy:
-                xmin, ymin, xmax, ymax, _, label = bbox_data
-                p0, p1, label = (int(xmin), int(ymin)), (int(xmax), int(ymax)), int(label)
-                frame_draw = cv2.rectangle(frame_draw, 
-                                            p0, p1, 
-                                            rgb_colors[label], 2) 
-                # Tambahkan teks label di sekitar kotak pembatas
-                label_text = f"{CLASSES[label]}"
-                frame_draw = cv2.putText(frame_draw, label_text, (int(xmin), int(ymin) - 5),
-                                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb_colors[label], 2)
-
-                detected_ids.append(label)
-
-            # Tampilkan jumlah objek yang terdeteksi
-            num_detected_objects = len(detected_ids)
-            st.header(f"Sekrup terdeteksi: {num_detected_objects}")
-
-            # Tampilkan frame dengan kotak yang digambar
-            st.image(frame_draw, use_column_width=True, channels="RGB")
-
-        # Bebaskan objek tangkapan video
-        video_cap.release()
+        cap.release()
 
 
 elif prediction_mode == 'Web camera':
