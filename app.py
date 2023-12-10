@@ -246,26 +246,26 @@ if prediction_mode == 'Video Upload':
         # Loop melalui frame video
         while video_cap.isOpened():
             ret, frame = video_cap.read()
-
+        
             if not ret:
                 break
-
+        
             # Ubah frame ke format RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
+        
             # Dapatkan prediksi untuk frame saat ini
             result = get_preds(frame_rgb)
-
+        
             # Salin hasil fungsi yang di-cache untuk menghindari modifikasi cache
             result_copy = result.copy()
-
+        
             # Pilih hanya objek kelas yang diinginkan
             result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
-
+        
             detected_ids = []
             # Salin frame untuk menghindari modifikasi langsung
             frame_draw = frame_rgb.copy().astype(np.uint8)
-
+        
             # Gambar kotak untuk semua objek target yang terdeteksi
             for bbox_data in result_copy:
                 xmin, ymin, xmax, ymax, _, label = bbox_data
@@ -277,13 +277,13 @@ if prediction_mode == 'Video Upload':
                 label_text = f"{CLASSES[label]}"
                 frame_draw = cv2.putText(frame_draw, label_text, (int(xmin), int(ymin) - 5),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb_colors[label], 2)
-
+        
                 detected_ids.append(label)
-
+        
             # Tampilkan jumlah objek yang terdeteksi
             num_detected_objects = len(detected_ids)
             st.header(f"Sekrup terdeteksi: {num_detected_objects}")
-
+        
             # Tampilkan frame dengan kotak yang digambar
             st.image(frame_draw, use_column_width=True, channels="RGB")
 
