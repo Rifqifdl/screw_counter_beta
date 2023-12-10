@@ -223,66 +223,69 @@ if prediction_mode == 'Single image':
         st.image(img_draw, use_column_width=True)
 
 if prediction_mode == 'Video Upload':
-
-    # Adds a form for uploading a video
+    # Menambahkan formulir untuk mengunggah video
     uploaded_file = st.file_uploader(
         "Pilih Video",
-        type=['mp4', 'avi', 'mkv'])
+        type=['mp4', 'avi', 'mkv'],
+        key="video_uploader"
+    )
 
-    # If the file is uploaded
+    # Jika file diunggah
     if uploaded_file is not None:
-
-        # Read the video from the uploaded file
+        # Baca video dari file yang diunggah
         video_bytes = uploaded_file.read()
+        st.video(video_bytes, format="video/mp4", start_time=0)
+
+        # Convert video bytes to numpy array
         video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
         video_cap = cv2.VideoCapture()
-        video_cap.open('file', cv2.CAP_IMAGES)  # Use 'file' for videos
+        video_cap.open('file', cv2.CAP_IMAGES)  # Gunakan 'file' untuk video
 
-        # Loop through video frames
+        # Loop melalui frame video
         while video_cap.isOpened():
             ret, frame = video_cap.read()
 
             if not ret:
                 break
 
-            # Convert the frame to RGB format
+            # Ubah frame ke format RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-            # Get predictions for the current frame
+            # Dapatkan prediksi untuk frame saat ini
             result = get_preds(frame_rgb)
 
-            # Copy the results of the cached function to avoid modifying the cache
+            # Salin hasil fungsi yang di-cache untuk menghindari modifikasi cache
             result_copy = result.copy()
 
-            # Select only objects of the desired classes
+            # Pilih hanya objek kelas yang diinginkan
             result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
 
             detected_ids = []
-            # Copy the frame to avoid modifying it directly
+            # Salin frame untuk menghindari modifikasi langsung
             frame_draw = frame_rgb.copy().astype(np.uint8)
 
-            # Draw boxes for all detected target objects
+            # Gambar kotak untuk semua objek target yang terdeteksi
             for bbox_data in result_copy:
                 xmin, ymin, xmax, ymax, _, label = bbox_data
                 p0, p1, label = (int(xmin), int(ymin)), (int(xmax), int(ymax)), int(label)
                 frame_draw = cv2.rectangle(frame_draw, 
                                             p0, p1, 
                                             rgb_colors[label], 2) 
-                # Add label text around the bounding box
+                # Tambahkan teks label di sekitar kotak pembatas
                 label_text = f"{CLASSES[label]}"
                 frame_draw = cv2.putText(frame_draw, label_text, (int(xmin), int(ymin) - 5),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb_colors[label], 2)
 
                 detected_ids.append(label)
 
-            # Display the number of detected objects
+            # Tampilkan jumlah objek yang terdeteksi
             num_detected_objects = len(detected_ids)
-            st.header(f"Detected Screws: {num_detected_objects}")
+            st.header(f"Sekrup terdeteksi: {num_detected_objects}")
 
-            # Display the frame with drawn boxes
+            # Tampilkan frame dengan kotak yang digambar
             st.image(frame_draw, use_column_width=True, channels="RGB")
 
-        # Release the video capture object
+        # Bebaskan objek tangkapan video
         video_cap.release()
 
 
