@@ -235,21 +235,12 @@ if prediction_mode == 'Video Upload':
     if uploaded_file is not None:
         # Baca video dari file yang diunggah
         video_bytes = uploaded_file.read()
+        st.video(video_bytes, format="video/mp4", start_time=0)
 
         # Convert video bytes to numpy array
         video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
-
-        # Gunakan mode CAP_FFMPEG untuk membaca video tanpa menyertakan nama file
-        video_cap = cv2.VideoCapture(cv2.CAP_FFMPEG)
-
-        # Set buffer dengan video bytes
-        video_cap.set(cv2.CAP_PROP_BUFFERSIZE, len(video_bytes))
-
-        # Set mode read untuk file
-        video_cap.open('file', cv2.CAP_FFMPEG)
-
-        # Ambil jumlah total frame di video
-        total_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        video_cap = cv2.VideoCapture()
+        video_cap.open('file', cv2.CAP_IMAGES)  # Gunakan 'file' untuk video
 
         # Loop melalui frame video
         while video_cap.isOpened():
@@ -257,23 +248,23 @@ if prediction_mode == 'Video Upload':
 
             if not ret:
                 break
-        
+
             # Ubah frame ke format RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        
+
             # Dapatkan prediksi untuk frame saat ini
             result = get_preds(frame_rgb)
-        
+
             # Salin hasil fungsi yang di-cache untuk menghindari modifikasi cache
             result_copy = result.copy()
-        
+
             # Pilih hanya objek kelas yang diinginkan
             result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
-        
+
             detected_ids = []
             # Salin frame untuk menghindari modifikasi langsung
             frame_draw = frame_rgb.copy().astype(np.uint8)
-        
+
             # Gambar kotak untuk semua objek target yang terdeteksi
             for bbox_data in result_copy:
                 xmin, ymin, xmax, ymax, _, label = bbox_data
@@ -285,13 +276,13 @@ if prediction_mode == 'Video Upload':
                 label_text = f"{CLASSES[label]}"
                 frame_draw = cv2.putText(frame_draw, label_text, (int(xmin), int(ymin) - 5),
                                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb_colors[label], 2)
-        
+
                 detected_ids.append(label)
-        
+
             # Tampilkan jumlah objek yang terdeteksi
             num_detected_objects = len(detected_ids)
             st.header(f"Sekrup terdeteksi: {num_detected_objects}")
-        
+
             # Tampilkan frame dengan kotak yang digambar
             st.image(frame_draw, use_column_width=True, channels="RGB")
 
