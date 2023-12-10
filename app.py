@@ -159,7 +159,7 @@ model = get_yolo5(model_type)
 
 #sidebar
 
-classes_selector = 'Screw'
+classes_selector = CLASSES.index('Screw')
 
 # Prediction section
 # ---------------------------------------------------------
