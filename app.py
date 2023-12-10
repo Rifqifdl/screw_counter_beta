@@ -11,8 +11,9 @@ from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 from config import CLASSES, WEBRTC_CLIENT_SETTINGS
 
-#изменим название страницы, отображаемое на вкладке браузера
-#set_page_config должна вызываться до всех функций streamlit
+# Change the page title displayed on the browser tab
+# set_page_config should be called before any Streamlit functions
+
 st.set_page_config(
     page_title="YOLOv5 Screw Counting",
 )
@@ -164,11 +165,10 @@ classes_selector = st.sidebar.multiselect('Select classes',
 # Prediction section
 # ---------------------------------------------------------
 
-#target labels and their colors
-#target_class_ids - индексы выбранных классов согласно списку классов MS COCC
-#rgb_colors - rgb-цвета для выбранных классов
-# if all_labels_chbox:
-#     target_class_ids = list(range(len(CLASSES)))
+# Target labels and their colors
+# target_class_ids - Indexes of selected classes according to the class list
+# rgb_colors - RGB colors for selected classes
+
 if classes_selector:
     target_class_ids = [CLASSES.index(class_name) for class_name in classes_selector]
 else:
@@ -180,15 +180,15 @@ detected_ids = None
 
 if prediction_mode == 'Single image':
 
-    # добавляет форму для загрузки изображения
+    # Adds a form for uploading an image
     uploaded_file = st.file_uploader(
         "Choose an image",
         type=['png', 'jpg', 'jpeg'])
 
-    # если файл загружен
+    # If the file is uploaded
     if uploaded_file is not None:
 
-        # конвертация изображения из bytes в np.ndarray
+        # Conversion of an image from bytes to np.ndarray
         bytes_data = uploaded_file.getvalue()
         file_bytes = np.asarray(bytearray(bytes_data), dtype=np.uint8)
         img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
@@ -196,17 +196,15 @@ if prediction_mode == 'Single image':
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         result = get_preds(img)
 
-        #скопируем результаты работы кэшируемой функции, чтобы не изменить кэш
+        # Copy the results of the cached function to avoid modifying the cache
         result_copy = result.copy()
-        #отберем только объекты нужных классов
+        # Select only objects of the desired classes
         result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
-        
 
         detected_ids = []
-        #также скопируем изображение, чтобы не изменить аргумент кэшируемой 
-        # функции get_preds
+        # Also, copy the image to avoid modifying the argument to the cached function get_preds
         img_draw = img.copy().astype(np.uint8)
-        # нарисуем боксы для всех найденных целевых объектов
+        # Draw boxes for all detected target objects
         for bbox_data in result_copy:
             xmin, ymin, xmax, ymax, _, label = bbox_data
             p0, p1, label = (int(xmin), int(ymin)), (int(xmax), int(ymax)), int(label)
@@ -223,28 +221,29 @@ if prediction_mode == 'Single image':
         
         # Menampilkan jumlah objek yang terdeteksi
         num_detected_objects = len(detected_ids)
-        # выведем изображение с нарисованными боксами
-        # use_column_width растянет изображение по ширине центральной колонки
         st.header(f"Sekrup terdeteksi: {num_detected_objects}")
+        
+        # Display the image with drawn boxes
+        # use_column_width will stretch the image to the width of the central column
         st.image(img_draw, use_column_width=True)
 
 elif prediction_mode == 'Web camera':
     
-    # создаем объект для вывода стрима с камеры
+    # Create an object for streaming from the camera
     ctx = webrtc_streamer(
         key="example", 
         video_transformer_factory=VideoTransformer,
         client_settings=WEBRTC_CLIENT_SETTINGS,)
 
-    # необходимо для того, чтобы объект VideoTransformer подхватил новые данные
-    # после обновления страницы streamlit
+    # Necessary to ensure that the VideoTransformer object picks up new data
+    # after refreshing the Streamlit page
     if ctx.video_transformer:
         ctx.video_transformer.model = model
         ctx.video_transformer.rgb_colors = rgb_colors
         ctx.video_transformer.target_class_ids = target_class_ids
 
-# выведем список найденных классов при работе с изображением или список всех
-# выбранных классов при работе с видео
+# Display the list of detected classes when working with an image 
+# or the list of all selected classes when working with a video
 detected_ids = set(detected_ids if detected_ids is not None else target_class_ids)
 labels = [CLASSES[index] for index in detected_ids]
 legend_df = pd.DataFrame({'label': labels})
