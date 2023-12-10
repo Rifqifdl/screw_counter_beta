@@ -22,7 +22,9 @@ st.title('Deteksi dan Hitung Sekrup dengan YOLOv5')
 st.write('Kelompok 4 PCD - Pagi B')
 
 # Select Box Tipe Input
-prediction_mode = st.selectbox("Pilih Tipe Input",('Single image', 'Web camera'),index=0)
+prediction_mode = st.selectbox(
+    "Pilih Tipe Input",('Single image', 'Video Upload', 'Web camera'),
+    index=0)
 
 #region Functions
 # --------------------------------------------
@@ -219,6 +221,70 @@ if prediction_mode == 'Single image':
         # Display the image with drawn boxes
         # use_column_width will stretch the image to the width of the central column
         st.image(img_draw, use_column_width=True)
+
+if prediction_mode == 'Video Upload':
+
+    # Adds a form for uploading a video
+    uploaded_file = st.file_uploader(
+        "Pilih Video",
+        type=['mp4', 'avi', 'mkv'])
+
+    # If the file is uploaded
+    if uploaded_file is not None:
+
+        # Read the video from the uploaded file
+        video_bytes = uploaded_file.read()
+        video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
+        video_cap = cv2.VideoCapture()
+        video_cap.open('file', cv2.CAP_IMAGES)  # Use 'file' for videos
+
+        # Loop through video frames
+        while video_cap.isOpened():
+            ret, frame = video_cap.read()
+
+            if not ret:
+                break
+
+            # Convert the frame to RGB format
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Get predictions for the current frame
+            result = get_preds(frame_rgb)
+
+            # Copy the results of the cached function to avoid modifying the cache
+            result_copy = result.copy()
+
+            # Select only objects of the desired classes
+            result_copy = result_copy[np.isin(result_copy[:,-1], target_class_ids)]
+
+            detected_ids = []
+            # Copy the frame to avoid modifying it directly
+            frame_draw = frame_rgb.copy().astype(np.uint8)
+
+            # Draw boxes for all detected target objects
+            for bbox_data in result_copy:
+                xmin, ymin, xmax, ymax, _, label = bbox_data
+                p0, p1, label = (int(xmin), int(ymin)), (int(xmax), int(ymax)), int(label)
+                frame_draw = cv2.rectangle(frame_draw, 
+                                            p0, p1, 
+                                            rgb_colors[label], 2) 
+                # Add label text around the bounding box
+                label_text = f"{CLASSES[label]}"
+                frame_draw = cv2.putText(frame_draw, label_text, (int(xmin), int(ymin) - 5),
+                                            cv2.FONT_HERSHEY_SIMPLEX, 0.5, rgb_colors[label], 2)
+
+                detected_ids.append(label)
+
+            # Display the number of detected objects
+            num_detected_objects = len(detected_ids)
+            st.header(f"Detected Screws: {num_detected_objects}")
+
+            # Display the frame with drawn boxes
+            st.image(frame_draw, use_column_width=True, channels="RGB")
+
+        # Release the video capture object
+        video_cap.release()
+
 
 elif prediction_mode == 'Web camera':
     
