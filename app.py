@@ -154,19 +154,14 @@ model = get_yolo5(model_type)
 #endregion
 
 
-# UI elements
-# ----------------------------------------------------
-
-#sidebar
-
-classes_selector = CLASSES.index('Screw')
-
 # Prediction section
 # ---------------------------------------------------------
 
 # Target labels and their colors
 # target_class_ids - Indexes of selected classes according to the class list
 # rgb_colors - RGB colors for selected classes
+
+classes_selector = CLASSES.index('Screw')
 
 if classes_selector:
     target_class_ids = [CLASSES.index(class_name) for class_name in classes_selector]
@@ -176,12 +171,11 @@ else:
 rgb_colors = get_colors(target_class_ids)
 detected_ids = None
 
-
 if prediction_mode == 'Single image':
 
     # Adds a form for uploading an image
     uploaded_file = st.file_uploader(
-        "Choose an image",
+        "Pilih Gambar",
         type=['png', 'jpg', 'jpeg'])
 
     # If the file is uploaded
