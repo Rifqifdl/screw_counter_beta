@@ -227,10 +227,10 @@ if prediction_mode == 'Video Upload':
     vid_bytes = st.file_uploader(
         "Pilih Video",
         type=['png', 'jpg', 'jpeg'])
-        if vid_bytes:
-            vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
-            with open(vid_file, 'wb') as out:
-                out.write(vid_bytes.read())
+    if vid_bytes:
+        vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
+        with open(vid_file, 'wb') as out:
+            out.write(vid_bytes.read())
 
     if vid_file:
         cap = cv2.VideoCapture(vid_file)
