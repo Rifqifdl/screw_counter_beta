@@ -154,7 +154,7 @@ model = get_yolo5(model_type)
 # ----------------------------------------------------
 
 #sidebar
-prediction_mode = st.sidebar.selectbox("Select an option", ["Single Image", "Web Camera"], default="Single Image")
+prediction_mode = st.sidebar.selectbox("Select an option", ["Single Image", "Web Camera"], index=0)
     
 classes_selector = st.sidebar.multiselect('Select classes', 
                                         CLASSES, default='Screw')
