@@ -238,7 +238,10 @@ if prediction_mode == 'Video Upload':
 
         # Convert video bytes to numpy array
         video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
-        video_cap = cv2.VideoCapture('file')  # Gunakan 'file' untuk video
+
+        # Gunakan mode CAP_FFMPEG untuk membaca video
+        video_cap = cv2.VideoCapture()
+        video_cap.open('file', cv2.CAP_FFMPEG)
 
         # Ambil jumlah total frame di video
         total_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -246,7 +249,7 @@ if prediction_mode == 'Video Upload':
         # Loop melalui frame video
         while video_cap.isOpened():
             ret, frame = video_cap.read()
-        
+
             if not ret:
                 break
         
