@@ -23,7 +23,7 @@ st.write('Kelompok 4 PCD - Pagi B')
 
 # Select Box Tipe Input
 prediction_mode = st.selectbox(
-    "Pilih Tipe Input",('Single image', 'Video Upload', 'Web camera'),
+    "Pilih Tipe Input",('Single image', 'Web camera'),
     index=0)
 
 #region Functions
@@ -221,60 +221,6 @@ if prediction_mode == 'Single image':
         # Display the image with drawn boxes
         # use_column_width will stretch the image to the width of the central column
         st.image(img_draw, use_column_width=True)
-
-
-if prediction_mode == 'Video Upload':
-    vid_file = None
-    vid_bytes = st.file_uploader(
-        "Pilih Video",
-        type=['mp4', 'mkv', 'avi'])
-    if vid_bytes:
-        vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
-        with open(vid_file, 'wb') as out:
-            out.write(vid_bytes.read())
-
-    if vid_file:
-        cap = cv2.VideoCapture(vid_file)
-        custom_size = st.sidebar.checkbox("Custom frame size")
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        if custom_size:
-            width = st.sidebar.number_input("Width", min_value=120, step=20, value=width)
-            height = st.sidebar.number_input("Height", min_value=120, step=20, value=height)
-
-        fps = 0
-        st1, st2, st3 = st.columns(3)
-        with st1:
-            st.markdown("## Height")
-            st1_text = st.markdown(f"{height}")
-        with st2:
-            st.markdown("## Width")
-            st2_text = st.markdown(f"{width}")
-        with st3:
-            st.markdown("## FPS")
-            st3_text = st.markdown(f"{fps}")
-
-        st.markdown("---")
-        output = st.empty()
-        prev_time = 0
-        curr_time = 0
-        while True:
-            ret, frame = cap.read()
-            if not ret:
-                st.write("Can't read frame, stream ended? Exiting ....")
-                break
-            frame = cv2.resize(frame, (width, height))
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            output_img = infer_image(frame)
-            output.image(output_img)
-            curr_time = time.time()
-            fps = 1 / (curr_time - prev_time)
-            prev_time = curr_time
-            st1_text.markdown(f"**{height}**")
-            st2_text.markdown(f"**{width}**")
-            st3_text.markdown(f"**{fps:.2f}**")
-
-        cap.release()
 
 
 elif prediction_mode == 'Web camera':
