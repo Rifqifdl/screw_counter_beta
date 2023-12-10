@@ -21,6 +21,9 @@ st.set_page_config(
 st.title('Deteksi dan Hitung Sekrup dengan YOLOv5')
 st.write('Kelompok 4 PCD - Pagi B')
 
+# Selecr Box Tipe Input
+prediction_mode = st.selectbox("",('Single image', 'Web camera'),index=0)
+
 #region Functions
 # --------------------------------------------
 def get_yolo5(model_type='s'):
@@ -155,12 +158,9 @@ model = get_yolo5(model_type)
 # ----------------------------------------------------
 
 #sidebar
-prediction_mode = st.sidebar.selectbox("",('Single image', 'Web camera'),index=0)
-    
+
 classes_selector = st.sidebar.multiselect('Select classes', 
                                         CLASSES, default='Screw')
-# all_labels_chbox = st.sidebar.checkbox('All classes', value=False)
-
 
 # Prediction section
 # ---------------------------------------------------------
