@@ -174,7 +174,7 @@ model = get_yolo5(model_type)
 # else:
 #     target_class_ids = [0]
 
-rgb_colors = get_colors(target_class_ids)
+# rgb_colors = get_colors(target_class_ids)
 detected_ids = None
 
 
@@ -244,7 +244,7 @@ elif prediction_mode == 'Web camera':
 
 # Display the list of detected classes when working with an image 
 # or the list of all selected classes when working with a video
-detected_ids = set(detected_ids if detected_ids is not None else target_class_ids)
-labels = [CLASSES[index] for index in detected_ids]
-legend_df = pd.DataFrame({'label': labels})
+# detected_ids = set(detected_ids if detected_ids is not None else target_class_ids)
+# labels = [CLASSES[index] for index in detected_ids]
+# legend_df = pd.DataFrame({'label': labels})
 # st.dataframe(legend_df.style.applymap(get_legend_color))
