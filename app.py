@@ -222,6 +222,7 @@ if prediction_mode == 'Single image':
         # use_column_width will stretch the image to the width of the central column
         st.image(img_draw, use_column_width=True)
 
+
 if prediction_mode == 'Video Upload':
     # Menambahkan formulir untuk mengunggah video
     uploaded_file = st.file_uploader(
@@ -234,12 +235,13 @@ if prediction_mode == 'Video Upload':
     if uploaded_file is not None:
         # Baca video dari file yang diunggah
         video_bytes = uploaded_file.read()
-        st.video(video_bytes, format="video/mp4", start_time=0)
 
         # Convert video bytes to numpy array
         video_np = np.asarray(bytearray(video_bytes), dtype=np.uint8)
-        video_cap = cv2.VideoCapture()
-        video_cap.open('file', cv2.CAP_IMAGES)  # Gunakan 'file' untuk video
+        video_cap = cv2.VideoCapture('file')  # Gunakan 'file' untuk video
+
+        # Ambil jumlah total frame di video
+        total_frames = int(video_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
         # Loop melalui frame video
         while video_cap.isOpened():
