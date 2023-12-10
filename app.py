@@ -224,7 +224,9 @@ if prediction_mode == 'Single image':
 
 
 if prediction_mode == 'Video Upload':
-    vid_bytes = st.sidebar.file_uploader("Upload a video", type=['mp4', 'mpv', 'avi'])
+    vid_bytes = st.file_uploader(
+        "Pilih Video",
+        type=['png', 'jpg', 'jpeg'])
         if vid_bytes:
             vid_file = "data/uploaded_data/upload." + vid_bytes.name.split('.')[-1]
             with open(vid_file, 'wb') as out:
